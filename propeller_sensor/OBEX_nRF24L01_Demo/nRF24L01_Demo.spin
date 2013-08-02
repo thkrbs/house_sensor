@@ -40,6 +40,7 @@ PUB Demo | payload[4], idx
   SER.start(31, 30, 0, 57600)
   waitcnt(clkfreq*2 + cnt)
   SER.tx(SER#CLS)
+  SER.str(String("hi...")) 
 
   'Initialize Nordic nRF24L01
   RECEIVER.Init(SPI_SCK, SPI_MISO, SPI_MOSI, SPI_CSN, SPI_CE)

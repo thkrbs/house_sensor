@@ -1,0 +1,26 @@
+
+Idee:
+"Habe ich das Fenster gestern aufgelassen?
+
+Sensoren übertragen informationen
+über Funk
+an eine Zentrale Anzeige.
+
+
+Sensoren 
+- mcu klein und günstig z.B. 
+   - attiny: ATtiny 84 (44/24),ATtiny 85 (45/25), and ATtiny 2313) 
+   - msp430, 
+   - pic12
+- funk z.b. nrf24l01+, rfm12
+- energie: akku oder kondensator mit solar
+- input temp, Fenster auf/zu, taster, reed-kontakt, licht
+
+Funk
+- 433, 868, 2,4 GHz
+
+Zentrale 
+- Raspberry mit TFT ? (stromverbauch ?)
+oder
+- Anduino mit LCD ?
+

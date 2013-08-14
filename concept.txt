@@ -24,9 +24,4 @@ Zentrale
 oder
 - Anduino mit LCD ?
 
- HEAD
-This note is on hte testbranch
-This one two
-merged
-This note is on the master branch
-refs/heads/master
+

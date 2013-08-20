@@ -31,6 +31,13 @@ CON
   SPI_CE = 3
   SPI_IRQ = 9
 
+PUB device_boot_msg ()
+PUB delay_10ms()
+PUB delay_10ms ()
+PUB start_timer (time)
+PUB wait_for_timer ()
+PUB timer_done() 'bool
+
 PUB Demo | payload[4], idx
 
   'Set IRQ pin state 

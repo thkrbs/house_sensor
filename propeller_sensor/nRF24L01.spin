@@ -1,6 +1,7 @@
 ''Inspired by Nikita Kareev (via OBEX) and Maniacbug (via  github.com/maniacbug/RF24Network.git)
 '' Nordic nRF24L01 driver http://www.sparkfun.com/commerce/product_info.php?products_id=691
-''
+'' Using the prototypes like from the nordic application note
+   
 ''Using version 6 SEP 2009 from Nikita Kareev and adding interface from maniacbug  
 ''
 '' 
@@ -140,57 +141,57 @@ private:
 or
 
 class Nrf24l {
-	public:
-		Nrf24l();
+        public:
+                Nrf24l();
 
-		void init();
-		void config();
-		void send(uint8_t *value);
-		void setRADDR(uint8_t * adr);
-		void setTADDR(uint8_t * adr);
-		bool dataReady();
-		bool isSending();
-		bool rxFifoEmpty();
-		bool txFifoEmpty();
-		void getData(uint8_t * data);
-		uint8_t getStatus();
-		
-		void transmitSync(uint8_t *dataout,uint8_t len);
-		void transferSync(uint8_t *dataout,uint8_t *datain,uint8_t len);
-		void configRegister(uint8_t reg, uint8_t value);
-		void readRegister(uint8_t reg, uint8_t * value, uint8_t len);
-		void writeRegister(uint8_t reg, uint8_t * value, uint8_t len);
-		void powerUpRx();
-		void powerUpTx();
-		void powerDown();
-		
-		void csnHi();
-		void csnLow();
+                void init();
+                void config();
+                void send(uint8_t *value);
+                void setRADDR(uint8_t * adr);
+                void setTADDR(uint8_t * adr);
+                bool dataReady();
+                bool isSending();
+                bool rxFifoEmpty();
+                bool txFifoEmpty();
+                void getData(uint8_t * data);
+                uint8_t getStatus();
+                
+                void transmitSync(uint8_t *dataout,uint8_t len);
+                void transferSync(uint8_t *dataout,uint8_t *datain,uint8_t len);
+                void configRegister(uint8_t reg, uint8_t value);
+                void readRegister(uint8_t reg, uint8_t * value, uint8_t len);
+                void writeRegister(uint8_t reg, uint8_t * value, uint8_t len);
+                void powerUpRx();
+                void powerUpTx();
+                void powerDown();
+                
+                void csnHi();
+                void csnLow();
 
-		void ceHi();
-		void ceLow();
-		void flushRx();
+                void ceHi();
+                void ceLow();
+                void flushRx();
 
-		/*In sending mode. */
-		uint8_t PTX;
+                /*In sending mode. */
+                uint8_t PTX;
 
-		/* CE Pin controls RX / TX, default 8.*/
-		uint8_t cePin;
+                /* CE Pin controls RX / TX, default 8.*/
+                uint8_t cePin;
 
-		/* CSN Pin Chip Select Not, default 7.*/
-		uint8_t csnPin;
+                /* CSN Pin Chip Select Not, default 7.*/
+                uint8_t csnPin;
 
-		/*Channel 0 - 127 or 0 - 84 in the US.*/
-		uint8_t channel;
+                /*Channel 0 - 127 or 0 - 84 in the US.*/
+                uint8_t channel;
 
-		/*Payload width in bytes default 16 max 32.*/
-		uint8_t payload;
-		
-		/* Rate is RF_SETUP, 0x06 is 1Mbps, Max power*/
-		uint8_t rfsetup;
-		
-		/*Spi interface (must extend spi).*/
-		MirfSpiDriver *spi;
+                /*Payload width in bytes default 16 max 32.*/
+                uint8_t payload;
+                
+                /* Rate is RF_SETUP, 0x06 is 1Mbps, Max power*/
+                uint8_t rfsetup;
+                
+                /*Spi interface (must extend spi).*/
+                MirfSpiDriver *spi;
 };
 
 }}
@@ -240,6 +241,8 @@ CON
   DYNPD = $1C   '%0000_0000
   FEATURE = $1D  '%0000_0000
 
+  
+
 OBJ 
 
   TIME  : "Clock"                                       'Clock
@@ -269,8 +272,13 @@ PUB Init(sck, miso, mosi, csn, ce)
   'Configure for receive
   ConfigureRX
 
-PUB ConfigureRX
+
+
+
+
+
 {{
+PUB ConfigureRX
   Configure nRF24L01 registers for receive mode.
   1. Data pipe 0 used
   2. RX Address is E7E7E7E7E7 
@@ -1199,15 +1207,15 @@ void w_tx_addr(char *addr);             // Configure TX address to send next pac
 void w_rx_addr(unsigned char pipe, char *addr);  // Configure RX address of "rf_addr_width" size into the specified pipe
 void w_tx_payload(unsigned char len, char *data);
 void w_tx_payload_noack(unsigned char len, char *data);  /* Only used in auto-ack mode with RF24_EN_DYN_ACK enabled;
-						 * send this packet with no auto-ack.
-						 */
+                                                 * send this packet with no auto-ack.
+                                                 */
 unsigned char r_rx_peek_payload_size();  // Peek size of incoming RX payload
 unsigned char r_rx_payload(unsigned char len, char *data);
 void flush_tx();
 void flush_rx();
 void tx_reuse_lastpayload();   /* Enable retransmitting contents of TX FIFO endlessly until flush_tx() or the FIFO contents are replaced.
-				* Actual retransmits don't occur until CE pin is strobed using pulse_ce();
-				*/
+                                * Actual retransmits don't occur until CE pin is strobed using pulse_ce();
+                                */
 void pulse_ce();  // Pulse CE pin to activate retransmission of TX FIFO contents after tx_reuse_lastpayload();
 void w_ack_payload(unsigned char pipe, unsigned char len, char *data);  // Used when RF24_EN_ACK_PAY is enabled to manually ACK a received packet
 
@@ -1215,8 +1223,8 @@ void w_ack_payload(unsigned char pipe, unsigned char len, char *data);  // Used 
 
 // Initialization and configuration
 void msprf24_init();  /* Set the various configuration variables before running this.
-		       * It will populate the channel/speed/power/default features/etc. values
-		       */
+                       * It will populate the channel/speed/power/default features/etc. values
+                       */
 void msprf24_close_pipe(unsigned char pipeid);       // Disable specified RX pipe
 void msprf24_close_pipe_all();                       // Disable all RX pipes (used during initialization)
 void msprf24_open_pipe(unsigned char pipeid, unsigned char autoack); // Enable specified RX pipe, optionally turn auto-ack (Enhanced ShockBurst) on
@@ -1226,7 +1234,7 @@ void msprf24_set_retransmit_delay(int us);           // 500-4000uS range, clampe
 void msprf24_set_retransmit_count(unsigned char count);       // 0-15 retransmits before MAX_RT (RF24_IRQ_TXFAILED) IRQ raised
 unsigned char msprf24_get_last_retransmits();        // # times a packet was retransmitted during last TX attempt
 unsigned char msprf24_get_lostpackets();      /* # of packets lost since last time the Channel was set.
-	                                       * Running msprf24_set_channel() without modifying rf_channel will reset this counter.
+                                               * Running msprf24_set_channel() without modifying rf_channel will reset this counter.
                                                */
 unsigned char msprf24_is_alive();                    // Hello World, test if chip is present and/or SPI is working.
 unsigned char msprf24_set_config(unsigned char cfgval);
@@ -1246,14 +1254,14 @@ unsigned char msprf24_queue_state();      // Read FIFO_STATUS register; user sho
 unsigned char msprf24_scan();             // Scan current channel for RPD (looks for any signals > -64dBm)
 
 // IRQ handling
-unsigned char msprf24_rx_pending();		   /* Query STATUS register to determine if RX FIFO data is available for reading. */
+unsigned char msprf24_rx_pending();                /* Query STATUS register to determine if RX FIFO data is available for reading. */
 unsigned char msprf24_get_irq_reason();            /* Query STATUS register for the IRQ flags, test with RF24_IRQ_* #define's
-						    * Result is stored in rf_irq (note- RF24_IRQ_FLAGGED is not automatically cleared by this
-						    * function, that's the user's responsibility.)
-						    */
+                                                    * Result is stored in rf_irq (note- RF24_IRQ_FLAGGED is not automatically cleared by this
+                                                    * function, that's the user's responsibility.)
+                                                    */
 void msprf24_irq_clear(unsigned char irqflag);     /* Clear specified Interrupt Flags (RF24_IRQ_* #define's) from the transceiver.
-		 				    * Required to allow further transmissions to continue.
-						    */
+                                                    * Required to allow further transmissions to continue.
+                                                    */
 
 }}
 

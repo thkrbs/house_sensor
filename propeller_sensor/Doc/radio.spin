@@ -1,8 +1,3 @@
-''ThK 2013-08-19
-''
-ObJ
-  HalRadio : "hal_nrf24L01p"   'radio implementation for nRF24L01
-
 CON
 
 ' enum radio_staus_t
@@ -28,40 +23,19 @@ static xdata uint8_t pload[RF_PAYLOAD_LENGTH];
  */
 }}
 
-VAR
-  BYTE Radio_status 
-  
-PUB init(spi_speed, MOSI, MISO, CLK, CS)
-  
-  HalRadio.radio_init(spi_speed, MOSI, MISO, CLK, CS)
-
-PUB radio_get_status | status  'radio_status
 'Get the current status of the radio.
+PUB radio_get_status()  'radio_status
   return status
   
-PUB radio_set_status(new_status)
 'Sets the status of the radio. Input parameter is checked to see if it is allowed.
-  Radio_status := new_status
-
-PUB set_channel(Channel)
-  HalRadio.set_rf_channel(Channel)
-
-PUB is_channel_busy(channel) : bool
-' set channel and wait min. 40us
-  HalRadio.set_rf_channel(channel)              ' // Frequenzy =  2400 + CHANNEL
-  HalRadio.set_power_mode(0)'HAL_NRF_PWR_UP)       ' // Power up device
+PUB radio_set_status(new_status)
+  status = new_status
   
-  waitcnt(clkfreq*0.00004 + cnt) 'wait 40us
-  
-  'radio_set_status (RF_IDLE);                    // Radio now ready
-
-  return HalRadio.get_receive_power_detected(5)
- 
-PUB radio_irq
 'This function reads the interrupts. It does the work
 ' * of a interrupt handler by manually reading the interrupt
 ' * flags and act on them. Sets the status with \
-{{  if (RADIO_ACTIVITY())                         // Check if an interupt is
+PUB radio_irq(void)
+  if (RADIO_ACTIVITY())                         // Check if an interupt is
                                                // triggered
     switch(hal_nrf_get_clear_irq_flags ())
     {
@@ -95,16 +69,16 @@ PUB radio_irq
     }
 
     RESET_RADIO_ACTIVITY()
-}}    
-PUB radio_get_pload_byte (byte_index)'uinit8
+    
 'Gets the bit at position @a byte_index in @b pload.
-'  return pload[byte_index]
+PUB radio_get_pload_byte (byte_index)'uinit8
+  return pload[byte_index]
   
-PUB radio_send_packet(packet, length)
 'This function load the data to be sent into the radio, sends it, and waits for the response.
-'  hal_nrf_write_tx_pload(packet, lenght)
-'  CE_PULSE()
-'  radio_set_status(RF_BUSY)
+PUB radio_send_packet(packet, length)
+  hal_nrf_write_tx_pload(packet, lenght)
+  CE_PULSE()
+  radio_set_status(RF_BUSY)
 
 PUB radio_init_sb(address, hal_nrf_operation_mode, operational_mode)
 

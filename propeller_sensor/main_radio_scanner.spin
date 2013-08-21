@@ -2,10 +2,8 @@
 ''
 
 OBJ
-  HalRadio : "hal_nrf24L01p"   'radio implementation for nRF24L01
-  Radio    : "radio_nRF"     'radio routines (Hardware independed, use rfm70 eg later)
+  Radio    : "radio_nRF"     'radio routines (for nRF24L01, planned to be Hardware independed, use rfm70 eg later)
   SER      : "FullDuplexSerialPlus"  'Serial port
-  NRF      : "hal_nrf_reg"  '' read defines for nRF24l01
   
 CON
 
@@ -23,7 +21,7 @@ CON
 VAR
    long i
 
-PUB Scanner | payload[4], idx , carrier, channel
+PUB Main_Scanner | payload[4], idx , carrier, channel
 '' gona be a channel scanner ''
 
   'Set IRQ pin state 
@@ -36,7 +34,7 @@ PUB Scanner | payload[4], idx , carrier, channel
   SER.str(String("hi...")) 
 
   'Initialize Nordic nRF24L01
-  Radio.Init(SPI_SCK, SPI_MISO, SPI_MOSI, SPI_CSN, SPI_CE)
+  Radio.Init( SPI_MISO, SPI_MOSI, SPI_SCK, SPI_CSN, SPI_CE)
 
   SER.str(String("Receiver configured. Waiting for packets..."))
   SER.str(String(SER#CR)) 
@@ -59,7 +57,7 @@ PUB Scanner | payload[4], idx , carrier, channel
 
     repeat i from 1 to 10 ' scan 10 time then repeat the channel layout
       repeat Channel from 0 to 99   'scan channels 2400 - 2500 MHz ISM Band in Germany : 2400 - 2483,5 is datacom (WLAN) Band in Germany
-          carrier := Radio.radio_is_channel_busy(Channel)
+          carrier := Radio.is_channel_busy(Channel)
           if carrier == true
              SER.str("#")
           else

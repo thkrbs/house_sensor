@@ -25,22 +25,11 @@ PUB lock_unlock(void)
   rw(0x73) 
 
   CSN_HIGH()
-PUB enable_ack_pl(void)
-  '' Enables the ACK payload feature
-  write_reg(FEATURE, (read_reg(FEATURE) | 0x02))
 
-PUB disable_ack_pl(void)
-  ''Disables the ACK payload featur
-   write_reg(FEATURE, (read_reg(FEATURE) & ~0x02))
 
-PUB enable_dynamic_pl(void)
-  {{ Enables the dynamic payload feature }}
-  write_reg(FEATURE, (read_reg(FEATURE) | 0x04))
-   
-PUB disable_dynamic_pl(void)
-  {{ Disables the dynamic payload feature }}
-  write_reg(FEATURE, (read_reg(FEATURE) & ~0x04))
-  
+
+
+
 PUB setup_dyn_pl( setup)
 {{ Sets the dynamic payload features for the RX pipes
 * The input parameter contains is a byte where the bit values tells weather the
@@ -49,20 +38,8 @@ PUB setup_dyn_pl( setup)
  * @param setup Byte value with bit set for pipes that uses the dynamic payload feature
 }}
   write_reg(DYNPD, setup & ~0xC0)
-  
-PUB read_rx_pl_w(void) : uint8
-  {{ Reads the payload width of the received ack payload
-  * @return Payload width of the received ack payload
-  }}
-  uint8_t temp 
-  
-  CSN_LOW()
 
-  rw(RD_RX_PLOAD_W)
-  temp = rw(0)
-  CSN_HIGH() 
-
-  return temp
+  
   
 PUB write_ack_pload(uint8_t pipe, uint8_t *tx_pload, uint8_t length)
   {{ Writes the payload that will be transmitted with the ack on the given pipe.
@@ -78,16 +55,6 @@ PUB write_ack_pload(uint8_t pipe, uint8_t *tx_pload, uint8_t length)
   }
 
   CSN_HIGH()
-  
-PUB enable_dynamic_ack(void)
-  {{ Enables the no-ack feature }}
-  write_reg(FEATURE, (read_reg(FEATURE) | 0x01))
-
-  
-PUB disable_dynamic_ack(void)
-{{ Disables the no-ack feature
-}}
-  write_reg(FEATURE, (read_reg(FEATURE) & ~0x01))
   
 PUB get_clear_irq_flags(void)  : uint8
 {{ Read then clears all interrupt flags.
@@ -182,51 +149,7 @@ PUB close_pipe(address_t pipe_num)
       break;
   }
   
-PUB set_address(address_t address, uint8_t *addr)
-{{ Set radio's RX address and TX address.
- * Use this function to set a RX address, or to set the TX address.
- * Beware of the difference for single and multibyte address registers.
- *
- * @param address Which address to set
- * @param *addr Buffer from which the address is stored in
-}}
-  switch(address)
-  {
-    case TX:
-    case PIPE0:
-    case PIPE1:
-      write_multibyte_reg((uint8_t) address, addr, 0);
-      break;
 
-    case PIPE2:
-    case PIPE3:
-    case PIPE4:
-    case PIPE5:
-      write_reg(RX_ADDR_P0 + (uint8_t) address, *addr);
-      break;
-
-    default:
-      break;
-  }
-  
-PUB set_auto_retr(uint8_t retr, uint16_t delay)
-{{ Set auto acknowledge parameters.
- * Use this function to set retransmit and retransmit delay
- * parameters.
- *
- * @param retr Number of retransmit, 0 equ retransmit OFF
- * @param delay Retransmit delay in µs
-}}
-  write_reg(SETUP_RETR, (((delay/250)-1)<<4) | retr)
-  
-PUB set_address_width(address_width_t address_width)
-{{ Set radio's address width.
- * Use this function to define the radio's address width,
- * referes to both RX and TX.
- *
- * @param address_width Address with in bytes
-}}
-  write_reg(SETUP_AW, (UINT8(address_width) - 2))
   
 PUB set_rx_pload_width(uint8_t pipe_num, uint8_t pload_width)
 {{ Set payload width for selected pipe.
@@ -301,29 +224,7 @@ PUB get_pipe_status(uint8_t pipe_num) : uint8
 
   return (en_aa << 1) + en_rx
   
-PUB get_address(uint8_t address, uint8_t *addr) : uint8
-{{ Get address for selected pipe.
- * Use this function to get address for selected pipe.
- *
- *
- * @param address Which address to get, Pipe- or TX-address
- * @param *addr buffer in which address bytes are written.
- * <BR><BR>For pipes containing only LSB byte of address, this byte is returned
- * in the<BR> *addr buffer.
- *
- * @return Address_Width in bytes
-}}
-  switch(address)
-  {
-    case PIPE0:
-    case PIPE1:
-    case TX:
-      return read_multibyte_reg(address, addr);
 
-    default:
-      *addr = read_reg(RX_ADDR_P0 + address);
-      return get_address_width();
-  }
   
 PUB get_auto_retr_status(void) : uint8 
 {{ Get auto retransmit parameters.
@@ -345,14 +246,6 @@ PUB get_packet_lost_ctr(void) : uint8
 }}
   return (read_reg(OBSERVE_TX) & (BIT_7|BIT_6|BIT_5|BIT_4)) >> 4
   
-PUB get_address_width(void) : uint8 
-{{ Get address width for radio.
- * Use this function to get the address width used for
- * the radio, both RX and TX.
- *
- * @return Address_Width in bytes
-}}
-  return (read_reg(SETUP_AW) + 2)
 
   
 PUB get_rx_pload_width(uint8_t pipe_num) : uint8 
@@ -380,7 +273,6 @@ PUB set_operation_mode(operation_mode_t op_mode)
     write_reg(CONFIG, (read_reg(CONFIG) & ~(1<<PRIM_RX)))
   
 
-  
 
 PUB set_datarate(datarate_t datarate)
 {{ Set radio's on-air datarate.
@@ -416,14 +308,7 @@ PUB get_power_mode(void) : uint8
 }}
   return (read_reg(CONFIG) & (1<<PWR_UP)) >> PWR_UP
   
-PUB get_rf_channel(void) : uint8 
-{{ Get radio's current RF channel.
- * Use this function to get the radio's current
- * selected RF channel
- *
- * @return RF channel
-}}
-  return read_reg(RF_CH)
+
   
 PUB get_output_power(void) : uint8
 {{ Get radio's current TX output power.
@@ -437,6 +322,7 @@ PUB get_output_power(void) : uint8
  * @retval 0x03 0dBm
 }}
   return (read_reg(RF_SETUP) & ((1<<RF_PWR1)|(1<<RF_PWR0))) >> RF_PWR0
+
   
 PUB get_datarate(void) : uint8
 {{ Get radio's current on-air datarate.
@@ -448,6 +334,7 @@ PUB get_datarate(void) : uint8
  * @retval 0x01 2Mbps selected
 }}
   return (read_reg(RF_SETUP) & (1<<RF_DR)) >> RF_DR
+
   
 PUB get_tx_fifo_status(void)  : uint8 
 {{ Get radio's TX FIFO status.
@@ -460,6 +347,7 @@ PUB get_tx_fifo_status(void)  : uint8
  * @retval 0x02 FIFO full
 }}
   return ((read_reg(FIFO_STATUS) & ((1<<TX_FIFO_FULL)|(1<<TX_EMPTY))) >> 4)
+
   
 PUB tx_fifo_empty(void) : bool
 {{ Check for TX FIFO empty.
@@ -471,6 +359,7 @@ PUB tx_fifo_empty(void) : bool
  * @retval TRUE TX FIFO empty
 }}
   return (bool)((read_reg(FIFO_STATUS) >> TX_EMPTY) & 1)
+
   
 PUB tx_fifo_full(void)  : bool
 {{ Check for TX FIFO full.
@@ -583,22 +472,7 @@ PUB get_reuse_tx_status(void) : bool
 }}
   return (bool)((get_fifo_status() & (1<<TX_REUSE)) >> TX_REUSE)
   
-PUB flush_rx(void)
-{{ Flush RX FIFO. Use this function to flush the radio's RX FIFO }}
-  write_reg(FLUSH_RX, 0)
-  
-PUB flush_tx(void)
-{{ Flush TX FIFO.Use this function to flush the radio's  TX FIFO  }}
-  write_reg(FLUSH_TX, 0)
-  
-PUB nop(void) : uint8
-{{ No Operation command.
- * Use this function to receive the radio's
- * status register.
- *
- * @return Status register
-}}
-  return write_reg(NOP,0)
+
   
 PUB set_pll_mode(pll_mode_t pll_mode)
 {{ Set radio's PLL mode.
@@ -648,54 +522,6 @@ PUB get_lna_gain(void) : lna_mode
 }}
   return (lna_mode_t) ( (read_reg(RF_SETUP) & (1<<LNA_HCURR)) >> LNA_HCURR )
   
-PUB read_reg(uint8_t reg) : uint8
-{{ Basis function read_reg.
- * Use this function to read the contents
- * of one radios register.
- *
- * @param reg Register to read
- * @return Register contents
-}}
-  uint8_t temp
-  CSN_LOW()
-  rw(reg)
-  temp = rw(0)
-  CSN_HIGH()
-
-  return temp
-
-
-PUB write_reg(uint8_t reg, uint8_t value) : uint8
-{{ Basis function write_reg.
- * Use this function to write a new value to
- * a radio register.
- *
- * @param reg Register to write
- * @param value New value to write
- * @return Status register
-}}
-  uint8_t retval
-  CSN_LOW()
-  if(reg < WRITE_REG)   // i.e. this is a register access
-  {
-    retval = rw(WRITE_REG + reg);
-    rw(value);
-  }
-  else            // single byte cmd OR future command/register access
-  {
-    if(!(reg == FLUSH_TX) && !(reg == FLUSH_RX) && !(reg == REUSE_TX_PL) && !(reg == NOP))
-    {
-      retval = rw(reg);
-      rw(value);
-    }
-    else          // single byte L01 command
-    {
-      retval = rw(reg);
-    }
-  }
-  CSN_HIGH()
-
-  return retval
   
 PUB read_multibyte_reg(uint8_t reg, uint8_t *pbuf) : unit16
 {{ Basis function, read_multibyte register .
